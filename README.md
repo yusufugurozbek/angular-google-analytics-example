@@ -9,34 +9,59 @@ Easy implementation Google Analytics tracking code for Angular 5. It is with Glo
 ng new angular-google-analytics
 ```
 
-### Implement tracking code into index.html
-
-Don't forget to remove  ``` gtag('config', 'GA_TRACKING_ID'); ```
-
-Insert below code after your ```<head>``` tag.
-
-```html
-<!-- Global site tag (gtag.js) - Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=GA_TRACKING_ID"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-  </script>
-```
-
 ### Create script.js file
 
 ```javascript
+import {environment} from "../environments/environment";
+
+export function googleAnalyticsHeadScripts(){
+  const head = document.getElementsByTagName('head')[0];
+
+  const googleAnalyticsFirstScript = document.createElement('script');
+  googleAnalyticsFirstScript.async = true;
+  googleAnalyticsFirstScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + environment.google_analytics_code;
+
+  const googleAnalyticsSecondScript = document.createElement('script');
+  googleAnalyticsSecondScript.innerHTML = '    window.dataLayer = window.dataLayer || [];\n' +
+    '    function gtag(){dataLayer.push(arguments);}\n' +
+    '    gtag(\'js\', new Date());\n' +
+    '\n' +
+    '    gtag(\'config\', \'' + environment.google_analytics_code + '\');';
+
+  head.insertBefore(googleAnalyticsSecondScript, head.firstChild);
+  head.insertBefore(googleAnalyticsFirstScript, head.firstChild);
+}
+
 export function googleAnalytics(url) {
-  gtag('config', 'GA_TRACKING_ID', {'page_path': url});
+  gtag('config', environment.google_analytics_code, {'page_path': url});
 }
 ```
 
 ### Create script.d.ts file
 
 ```typescript
+export declare function googleAnalyticsHeadScripts();
 export declare function googleAnalytics(url);
+```
+
+### Update your environment.ts (environment.prod.ts for production) file and insert google_analytics_code variable
+
+```typescript
+google_analytics_code: 'GA_TRACKING_ID'
+```
+
+### Update main.ts file
+
+```typescript
+import {googleAnalyticsHeadScripts} from './assets/script';
+...
+if (environment.production) {
+  enableProdMode();
+}
+...
+googleAnalyticsHeadScripts();
+
+platformBrowserDynamic...
 ```
 
 ### Update AppComponent
