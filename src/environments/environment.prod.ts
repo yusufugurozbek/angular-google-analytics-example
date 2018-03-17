@@ -1,3 +1,4 @@
 export const environment = {
-  production: true
+  production: true,
+  google_analytics_code: 'GA_TRACKING_ID'
 };
